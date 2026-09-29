@@ -1,0 +1,21 @@
+import { test,expect } from 'vitest';
+import { randomUUID } from 'node:crypto';
+import { Prisma } from '@bakeflow/database';
+import { db } from '../src/shared/database.js';
+import { inventoryService,allocateFefo } from '../src/modules/inventory/service.js';
+test('FEFO excludes expired lots, splits consumption and adjustments preserve audit/balance',async()=>{
+ const key=randomUUID();const category=await db.ingredientCategory.create({data:{name:key}});const ingredient=await db.ingredient.create({data:{name:key,sku:key,baseUnit:'KG',categoryId:category.id}});const user=await db.user.findUniqueOrThrow({where:{email:'admin@bakeflow.demo'}});
+ const entry=(suffix:string,expiresAt:string,quantity:number)=>inventoryService.entry({itemType:'INGREDIENT',itemId:ingredient.id,quantity,unitCost:5,lotCode:key+suffix,manufacturedAt:'2020-01-01',expiresAt,reason:'Saldo inicial teste'},user.id);
+ await entry('expired','2020-02-01',100);
+ const first=await entry('first','2090-01-01',20);const second=await entry('second','2091-01-01',50);
+ const allocations=await db.$transaction(tx=>allocateFefo(tx,ingredient.id,new Prisma.Decimal(25)));
+ expect(allocations.map(a=>[a.lotId,a.quantity.toNumber()])).toEqual([[first.id,20],[second.id,5]]);
+ await expect(db.$transaction(tx=>allocateFefo(tx,ingredient.id,new Prisma.Decimal(71)))).rejects.toMatchObject({code:'INSUFFICIENT_STOCK'});
+ await expect(inventoryService.exit({lotId:first.id,quantity:21,reason:'Teste sem saldo'},user.id)).rejects.toMatchObject({code:'INSUFFICIENT_STOCK'});
+ expect((await db.inventoryLot.findUniqueOrThrow({where:{id:first.id}})).remainingQuantity.toString()).toBe('20');
+ await inventoryService.exit({lotId:first.id,quantity:2,reason:'Correção de contagem'},user.id);
+ expect(await db.inventoryMovement.count({where:{lotId:first.id}})).toBe(2);
+ expect((await db.inventoryLot.findUniqueOrThrow({where:{id:first.id}})).remainingQuantity.toString()).toBe('18');
+ const movement=await db.inventoryMovement.findFirstOrThrow({where:{lotId:first.id}});
+ await expect(db.inventoryMovement.update({where:{id:movement.id},data:{quantity:999}})).rejects.toThrow();
+});

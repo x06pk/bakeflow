@@ -1,0 +1,7 @@
+import { Prisma } from '@bakeflow/database';
+import { db } from './database.js';
+export async function atomic<T>(work:(tx:Prisma.TransactionClient)=>Promise<T>):Promise<T> {
+ for(let attempt=0;;attempt++) { try { return await db.$transaction(work,{isolationLevel:Prisma.TransactionIsolationLevel.Serializable,timeout:15000}); } catch(error) { if(attempt<3 && error instanceof Prisma.PrismaClientKnownRequestError && error.code==='P2034') continue; throw error; } }
+}
+export function audit(tx:Prisma.TransactionClient,userId:string,action:string,entity:string,entityId:string,metadata:Prisma.InputJsonValue={}) { return tx.auditLog.create({data:{userId,action,entity,entityId,metadata}}); }
+export function today() { const now=new Date(); return new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate())); }
