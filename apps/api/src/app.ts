@@ -1,3 +1,4 @@
+import { productionRoutes } from './modules/production/routes.js';
 import { purchaseRoutes } from './modules/purchases/routes.js';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
@@ -39,5 +40,6 @@ export async function buildApp() {
   await app.register(catalogRoutes, { prefix: '/api/v1' });
   await app.register(inventoryRoutes, { prefix: '/api/v1' });
   await app.register(purchaseRoutes, { prefix: '/api/v1' });
+  await app.register(productionRoutes, { prefix: '/api/v1' });
   return app;
 }

@@ -11,8 +11,8 @@ Sequência obrigatória; DONE somente após comprovar aceite e registrar valida�
 | M5 Catálogo | DONE | Categorias, insumos, produtos, receitas/versionamento; R4 |
 | M6 Estoque | DONE | Lotes, movimentos, ajustes, saldos, validade, FEFO; R5 |
 | M7 Compras | DONE | Fornecedores, pedidos, recebimento parcial; R6 |
-| M8 Produção | IN PROGRESS | Planos, faltas, transação, custos, rastreabilidade; R7 |
-| M9 Perdas | TODO | Registro, baixa, custo e histórico; R8 |
+| M8 Produção | DONE | Planos, faltas, transação, custos, rastreabilidade; R7 |
+| M9 Perdas | IN PROGRESS | Registro, baixa, custo e histórico; R8 |
 | M10 RH | TODO | Funcionários, férias, ausências; R9 |
 | M11 Dashboard + relatórios | TODO | KPIs, gráficos, filtros, CSV; R10 |
 | M12 Demo | TODO | Padaria Santa Massa e cenários; R12 |
