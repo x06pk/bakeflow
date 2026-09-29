@@ -1,0 +1,47 @@
+name: bakeflow
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: bakeflow-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-bakeflow}
+      POSTGRES_USER: ${POSTGRES_USER:-bakeflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Copy .env.example to .env}
+    ports:
+      - '127.0.0.1:55432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    container_name: bakeflow-api
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-bakeflow}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-bakeflow}?schema=public
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'node', '-e', "fetch('http://localhost:3000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    container_name: bakeflow-web
+    ports:
+      - '8080:80'
+    depends_on:
+      api:
+        condition: service_healthy
+volumes:
+  postgres_data:
