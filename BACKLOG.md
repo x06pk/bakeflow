@@ -8,8 +8,8 @@ Sequência obrigatória; DONE somente após comprovar aceite e registrar valida�
 | M2 Banco | DONE | Modelo, enums, constraints, migrations, seed mínimo; R2 |
 | M3 Auth + RBAC | DONE | Sessões e autorização; R3 |
 | M4 Design system + shell | DONE | Layout, componentes, temas, feedback; R11 |
-| M5 Catálogo | IN PROGRESS | Categorias, insumos, produtos, receitas/versionamento; R4 |
-| M6 Estoque | TODO | Lotes, movimentos, ajustes, saldos, validade, FEFO; R5 |
+| M5 Catálogo | DONE | Categorias, insumos, produtos, receitas/versionamento; R4 |
+| M6 Estoque | IN PROGRESS | Lotes, movimentos, ajustes, saldos, validade, FEFO; R5 |
 | M7 Compras | TODO | Fornecedores, pedidos, recebimento parcial; R6 |
 | M8 Produção | TODO | Planos, faltas, transação, custos, rastreabilidade; R7 |
 | M9 Perdas | TODO | Registro, baixa, custo e histórico; R8 |

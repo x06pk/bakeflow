@@ -29,3 +29,5 @@ Web: http://localhost:8080. PostgreSQL local: 127.0.0.1:55432. Compose aplica mi
 ## Validação
 
 `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`.
+
+Testes de integração usam banco isolado com sufixo `_test`. Crie-o com `docker compose exec postgres createdb -U bakeflow bakeflow_test`, configure `TEST_DATABASE_URL` e execute migrations/seed mínimo nesse destino (defina `DATABASE_URL` temporariamente com a URL de teste). A configuração Vitest recusa o banco operacional. Smoke de navegador: `node node_modules/@playwright/test/cli.js test`; no Windows com Edge instalado, defina `E2E_BROWSER=msedge`, com API/Vite rodando.

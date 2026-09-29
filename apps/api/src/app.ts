@@ -8,6 +8,7 @@ import { ZodError } from 'zod';
 import { Prisma } from '@bakeflow/database';
 import { AppError } from './shared/errors.js';
 import { authRoutes } from './modules/auth/routes.js';
+import { catalogRoutes } from './modules/catalog/routes.js';
 
 export async function buildApp() {
   const app = Fastify({ logger: { redact: ['req.headers.authorization', 'req.headers.cookie', 'res.headers["set-cookie"]'] } });
@@ -33,5 +34,6 @@ export async function buildApp() {
     reply.code(status).send({ error: { code: status >= 500 ? 'INTERNAL_ERROR' : 'INVALID_REQUEST', message: status >= 500 ? 'Erro inesperado.' : 'Requisição inválida.' } });
   });
   await app.register(authRoutes, { prefix: '/api/v1/auth' });
+  await app.register(catalogRoutes, { prefix: '/api/v1' });
   return app;
 }

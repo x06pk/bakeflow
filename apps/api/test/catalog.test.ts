@@ -1,0 +1,22 @@
+import { expect, test } from 'vitest';
+import { randomUUID } from 'node:crypto';
+import { db } from '../src/shared/database.js';
+import { catalogService } from '../src/modules/catalog/service.js';
+import { convert } from '../src/shared/units.js';
+test('unit dimensions are safe and new recipe versions preserve original quantities', async () => {
+  expect(convert(500, 'G', 'KG').toString()).toBe('0.5');
+  expect(convert(2, 'L', 'ML').toString()).toBe('2000');
+  expect(() => convert(1, 'KG', 'L')).toThrow('Unidades incompatíveis');
+  const key = randomUUID();
+  const ic = await db.ingredientCategory.create({ data: { name: key } });
+  const pc = await db.productCategory.create({ data: { name: key } });
+  const ingredient = await catalogService.saveIngredient({ name: 'Farinha teste', sku: key, categoryId: ic.id, baseUnit: 'KG', minimumStock: 0, active: true });
+  const product = await catalogService.saveProduct({ name: 'Pão teste', sku: key, categoryId: pc.id, unit: 'UNIT', salePrice: 1, minimumStock: 0, active: true });
+  const recipe = await catalogService.createRecipe({ name: 'Ficha teste', productId: product.id, yieldQuantity: 10, items: [{ ingredientId: ingredient.id, quantity: 500, unit: 'G' }] });
+  const version = await catalogService.version(recipe.id, { yieldQuantity: 20, items: [{ ingredientId: ingredient.id, quantity: 1, unit: 'KG' }] });
+  expect(version.version).toBe(2);
+  const original = await db.recipeVersion.findUniqueOrThrow({ where: { id: recipe.versions[0].id }, include: { items: true } });
+  expect(original.yieldQuantity.toString()).toBe('10');
+  expect(original.items[0].quantity.toString()).toBe('500');
+  await expect(catalogService.saveIngredient({ name: ingredient.name, sku: key, categoryId: ic.id, baseUnit: 'G', minimumStock: 0, active: true }, ingredient.id)).rejects.toThrow('Unidade não pode mudar');
+});

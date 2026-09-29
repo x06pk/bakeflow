@@ -11,6 +11,12 @@ test('login real, theme persistence, mobile navigation and logout', async ({ pag
  await expect(page.locator('aside')).toHaveCSS('width', '80px');
  await page.getByRole('button', { name: 'Alternar tema' }).click();
  await expect(page.locator('html')).toHaveClass('dark');
+ await page.goto('/ingredients');
+ await expect(page.getByRole('heading', { name: 'Insumos', exact: true })).toBeVisible();
+ await page.getByRole('button', { name: 'Novo insumo', exact: true }).click();
+ await expect(page.getByRole('dialog')).toBeVisible();
+ await expect(page.getByLabel('Nome', { exact: true })).toBeVisible();
+ await page.getByRole('button', { name: 'Cancelar', exact: true }).click();
  await page.reload();
  await expect(page.getByRole('button', { name: 'Sair', exact: true })).toBeVisible();
  await expect(page.locator('html')).toHaveClass('dark');
