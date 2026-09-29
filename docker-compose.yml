@@ -25,6 +25,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-bakeflow}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-bakeflow}?schema=public
       JWT_SECRET: ${JWT_SECRET}
       DEMO_PASSWORD: ${DEMO_PASSWORD}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
     depends_on:
       postgres:
