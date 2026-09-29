@@ -1,3 +1,5 @@
+import { employeeRoutes } from './modules/employees/routes.js';
+import { userRoutes } from './modules/users/routes.js';
 import { lossRoutes } from './modules/losses/routes.js';
 import { productionRoutes } from './modules/production/routes.js';
 import { purchaseRoutes } from './modules/purchases/routes.js';
@@ -43,5 +45,7 @@ export async function buildApp() {
   await app.register(purchaseRoutes, { prefix: '/api/v1' });
   await app.register(productionRoutes, { prefix: '/api/v1' });
   await app.register(lossRoutes, { prefix: '/api/v1' });
+  await app.register(employeeRoutes, { prefix: '/api/v1' });
+  await app.register(userRoutes, { prefix: '/api/v1' });
   return app;
 }

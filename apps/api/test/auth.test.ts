@@ -28,6 +28,11 @@ test('login, RBAC, rotation, replay detection and logout revoke access', async (
   const cookies = { bakeflow_refresh: cookie.value };
   expect((await app.inject({ url: '/api/v1/auth/me', headers: { authorization: `Bearer ${access}` } })).statusCode).toBe(200);
   expect((await app.inject({ url: '/test/admin', headers: { authorization: `Bearer ${access}` } })).statusCode).toBe(403);
+  expect((await app.inject({ url: '/api/v1/employees', headers: { authorization: `Bearer ${access}` } })).statusCode).toBe(200);
+  expect((await app.inject({ url: '/api/v1/users', headers: { authorization: `Bearer ${access}` } })).statusCode).toBe(403);
+  await db.user.update({ where: { email }, data: { role: 'STOCK' } });
+  expect((await app.inject({ url: '/api/v1/employees', headers: { authorization: `Bearer ${access}` } })).statusCode).toBe(403);
+  await db.user.update({ where: { email }, data: { role: 'HR' } });
   const refresh = await app.inject({ method: 'POST', url: '/api/v1/auth/refresh', cookies });
   expect(refresh.statusCode).toBe(200);
   expect((await app.inject({ url: '/api/v1/auth/me', headers: { authorization: `Bearer ${access}` } })).statusCode).toBe(401);
