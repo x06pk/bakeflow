@@ -5,8 +5,8 @@ Sequência obrigatória; DONE somente após comprovar aceite e registrar valida�
 | Milestone | Estado | Aceite |
 | --- | --- | --- |
 | M1 Fundação | DONE | Monorepo, tooling, web/API, Prisma, Docker, health; R1 |
-| M2 Banco | IN PROGRESS | Modelo, enums, constraints, migrations, seed mínimo; R2 |
-| M3 Auth + RBAC | TODO | Sessões e autorização; R3 |
+| M2 Banco | DONE | Modelo, enums, constraints, migrations, seed mínimo; R2 |
+| M3 Auth + RBAC | IN PROGRESS | Sessões e autorização; R3 |
 | M4 Design system + shell | TODO | Layout, componentes, temas, feedback; R11 |
 | M5 Catálogo | TODO | Categorias, insumos, produtos, receitas/versionamento; R4 |
 | M6 Estoque | TODO | Lotes, movimentos, ajustes, saldos, validade, FEFO; R5 |

@@ -10,6 +10,8 @@ Node 24 e pnpm. No PowerShell use `pnpm.cmd` se scripts estiverem bloqueados.
 pnpm install
 pnpm db:generate
 pnpm build
+pnpm db:migrate
+pnpm seed:minimal
 pnpm dev
 ```
 
@@ -22,7 +24,7 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-Web: http://localhost:8080. As credenciais placeholder são exclusivamente locais; substitua antes de expor qualquer ambiente. Migrations e seed serão adicionados no M2.
+Web: http://localhost:8080. PostgreSQL local: 127.0.0.1:55432. Compose aplica migrations e seed mínimo automaticamente. Admin: admin@bakeflow.demo, senha DEMO_PASSWORD do ambiente (mínimo 12 caracteres). As credenciais placeholder são exclusivamente locais; substitua antes de expor qualquer ambiente. O seed preserva usuários existentes.
 
 ## Validação
 

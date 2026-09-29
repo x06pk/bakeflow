@@ -1,7 +1,455 @@
 generator client {
   provider = "prisma-client-js"
 }
+
 datasource db {
   provider = "postgresql"
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  STOCK
+  PRODUCTION
+  HR
+}
+
+enum Unit {
+  KG
+  G
+  L
+  ML
+  UNIT
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  ON_LEAVE
+  VACATION
+  TERMINATED
+}
+
+enum VacationStatus {
+  SCHEDULED
+  APPROVED
+  CANCELLED
+  COMPLETED
+}
+
+enum AbsenceType {
+  SICK
+  PERSONAL
+  UNJUSTIFIED
+  OTHER
+}
+
+enum PurchaseStatus {
+  DRAFT
+  ORDERED
+  PARTIALLY_RECEIVED
+  RECEIVED
+  CANCELLED
+}
+
+enum ProductionStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum PlanStatus {
+  DRAFT
+  APPROVED
+  COMPLETED
+  CANCELLED
+}
+
+enum ItemType {
+  INGREDIENT
+  PRODUCT
+}
+
+enum MovementType {
+  PURCHASE_ENTRY
+  PRODUCTION_CONSUMPTION
+  PRODUCTION_OUTPUT
+  LOSS
+  ADJUSTMENT_ENTRY
+  ADJUSTMENT_EXIT
+}
+
+enum SourceType {
+  PURCHASE
+  PRODUCTION
+  ADJUSTMENT
+}
+
+enum LossReason {
+  EXPIRATION
+  LEFTOVER
+  PRODUCTION_ERROR
+  DAMAGE
+  QUALITY
+  OTHER
+}
+
+model User {
+  id           String              @id @default(uuid()) @db.Uuid
+  name         String
+  email        String              @unique
+  passwordHash String
+  role         Role
+  active       Boolean             @default(true)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  sessions     RefreshSession[]
+  purchases    PurchaseOrder[]
+  movements    InventoryMovement[]
+  plans        ProductionPlan[]
+  audits       AuditLog[]
+}
+
+model RefreshSession {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  user      User      @relation(fields: [userId], references: [id])
+  tokenHash String    @unique
+  familyId  String    @db.Uuid
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, familyId])
+}
+
+model Employee {
+  id              String             @id @default(uuid()) @db.Uuid
+  name            String
+  cpf             String             @unique
+  email           String?
+  phone           String?
+  birthDate       DateTime           @db.Date
+  hireDate        DateTime           @db.Date
+  terminationDate DateTime?          @db.Date
+  jobTitle        String
+  salary          Decimal            @db.Decimal(14, 2)
+  workSchedule    String
+  status          EmployeeStatus     @default(ACTIVE)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  vacations       EmployeeVacation[]
+  absences        EmployeeAbsence[]
+  productions     ProductionOrder[]
+  losses          Loss[]
+}
+
+model EmployeeVacation {
+  id         String         @id @default(uuid()) @db.Uuid
+  employeeId String         @db.Uuid
+  employee   Employee       @relation(fields: [employeeId], references: [id])
+  startDate  DateTime       @db.Date
+  endDate    DateTime       @db.Date
+  status     VacationStatus @default(SCHEDULED)
+  notes      String?
+
+  @@index([employeeId, startDate])
+}
+
+model EmployeeAbsence {
+  id         String      @id @default(uuid()) @db.Uuid
+  employeeId String      @db.Uuid
+  employee   Employee    @relation(fields: [employeeId], references: [id])
+  date       DateTime    @db.Date
+  type       AbsenceType
+  reason     String
+  justified  Boolean     @default(false)
+  notes      String?
+
+  @@index([employeeId, date])
+}
+
+model IngredientCategory {
+  id          String       @id @default(uuid()) @db.Uuid
+  name        String       @unique
+  ingredients Ingredient[]
+}
+
+model ProductCategory {
+  id       String    @id @default(uuid()) @db.Uuid
+  name     String    @unique
+  products Product[]
+}
+
+model Ingredient {
+  id            String                  @id @default(uuid()) @db.Uuid
+  name          String
+  sku           String                  @unique
+  categoryId    String                  @db.Uuid
+  category      IngredientCategory      @relation(fields: [categoryId], references: [id])
+  baseUnit      Unit
+  minimumStock  Decimal                 @default(0) @db.Decimal(18, 6)
+  active        Boolean                 @default(true)
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  recipeItems   RecipeItem[]
+  suppliers     SupplierIngredient[]
+  purchaseItems PurchaseOrderItem[]
+  lots          InventoryLot[]
+  movements     InventoryMovement[]
+  consumptions  ProductionConsumption[]
+  losses        Loss[]
+
+  @@index([name])
+}
+
+model Product {
+  id           String               @id @default(uuid()) @db.Uuid
+  name         String
+  sku          String               @unique
+  categoryId   String               @db.Uuid
+  category     ProductCategory      @relation(fields: [categoryId], references: [id])
+  unit         Unit
+  salePrice    Decimal              @db.Decimal(14, 2)
+  minimumStock Decimal              @default(0) @db.Decimal(18, 6)
+  active       Boolean              @default(true)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  recipes      Recipe[]
+  planItems    ProductionPlanItem[]
+  productions  ProductionOrder[]
+  lots         InventoryLot[]
+  movements    InventoryMovement[]
+  losses       Loss[]
+
+  @@index([name])
+}
+
+model Recipe {
+  id        String          @id @default(uuid()) @db.Uuid
+  productId String          @db.Uuid
+  product   Product         @relation(fields: [productId], references: [id])
+  name      String
+  active    Boolean         @default(true)
+  createdAt DateTime        @default(now())
+  versions  RecipeVersion[]
+}
+
+model RecipeVersion {
+  id            String            @id @default(uuid()) @db.Uuid
+  recipeId      String            @db.Uuid
+  recipe        Recipe            @relation(fields: [recipeId], references: [id])
+  version       Int
+  yieldQuantity Decimal           @db.Decimal(18, 6)
+  createdAt     DateTime          @default(now())
+  items         RecipeItem[]
+  productions   ProductionOrder[]
+
+  @@unique([recipeId, version])
+}
+
+model RecipeItem {
+  id              String        @id @default(uuid()) @db.Uuid
+  recipeVersionId String        @db.Uuid
+  recipeVersion   RecipeVersion @relation(fields: [recipeVersionId], references: [id])
+  ingredientId    String        @db.Uuid
+  ingredient      Ingredient    @relation(fields: [ingredientId], references: [id])
+  quantity        Decimal       @db.Decimal(18, 6)
+  unit            Unit
+
+  @@unique([recipeVersionId, ingredientId])
+}
+
+model Supplier {
+  id          String               @id @default(uuid()) @db.Uuid
+  legalName   String
+  tradeName   String
+  cnpj        String               @unique
+  email       String?
+  phone       String?
+  active      Boolean              @default(true)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  ingredients SupplierIngredient[]
+  purchases   PurchaseOrder[]
+}
+
+model SupplierIngredient {
+  supplierId   String     @db.Uuid
+  supplier     Supplier   @relation(fields: [supplierId], references: [id])
+  ingredientId String     @db.Uuid
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+  supplierSku  String?
+  lastPrice    Decimal    @db.Decimal(18, 6)
+
+  @@id([supplierId, ingredientId])
+}
+
+model PurchaseOrder {
+  id          String              @id @default(uuid()) @db.Uuid
+  supplierId  String              @db.Uuid
+  supplier    Supplier            @relation(fields: [supplierId], references: [id])
+  orderNumber String              @unique
+  status      PurchaseStatus      @default(DRAFT)
+  orderedAt   DateTime            @default(now())
+  expectedAt  DateTime?           @db.Date
+  total       Decimal             @db.Decimal(18, 6)
+  createdBy   String              @db.Uuid
+  creator     User                @relation(fields: [createdBy], references: [id])
+  createdAt   DateTime            @default(now())
+  items       PurchaseOrderItem[]
+
+  @@index([status, orderedAt])
+}
+
+model PurchaseOrderItem {
+  id               String         @id @default(uuid()) @db.Uuid
+  purchaseOrderId  String         @db.Uuid
+  purchaseOrder    PurchaseOrder  @relation(fields: [purchaseOrderId], references: [id])
+  ingredientId     String         @db.Uuid
+  ingredient       Ingredient     @relation(fields: [ingredientId], references: [id])
+  quantity         Decimal        @db.Decimal(18, 6)
+  unitPrice        Decimal        @db.Decimal(18, 6)
+  receivedQuantity Decimal        @default(0) @db.Decimal(18, 6)
+  lots             InventoryLot[]
+
+  @@unique([purchaseOrderId, ingredientId])
+}
+
+model InventoryLot {
+  id                  String                  @id @default(uuid()) @db.Uuid
+  ingredientId        String?                 @db.Uuid
+  ingredient          Ingredient?             @relation(fields: [ingredientId], references: [id])
+  productId           String?                 @db.Uuid
+  product             Product?                @relation(fields: [productId], references: [id])
+  lotCode             String                  @unique
+  sourceType          SourceType
+  purchaseOrderItemId String?                 @db.Uuid
+  purchaseOrderItem   PurchaseOrderItem?      @relation(fields: [purchaseOrderItemId], references: [id])
+  productionOrderId   String?                 @unique @db.Uuid
+  productionOrder     ProductionOrder?        @relation(fields: [productionOrderId], references: [id])
+  manufacturedAt      DateTime                @db.Date
+  expiresAt           DateTime                @db.Date
+  initialQuantity     Decimal                 @db.Decimal(18, 6)
+  remainingQuantity   Decimal                 @db.Decimal(18, 6)
+  unitCost            Decimal                 @db.Decimal(18, 6)
+  createdAt           DateTime                @default(now())
+  movements           InventoryMovement[]
+  consumptions        ProductionConsumption[]
+  losses              Loss[]
+
+  @@index([ingredientId, expiresAt])
+  @@index([productId, expiresAt])
+}
+
+model InventoryMovement {
+  id            String       @id @default(uuid()) @db.Uuid
+  itemType      ItemType
+  ingredientId  String?      @db.Uuid
+  ingredient    Ingredient?  @relation(fields: [ingredientId], references: [id])
+  productId     String?      @db.Uuid
+  product       Product?     @relation(fields: [productId], references: [id])
+  lotId         String       @db.Uuid
+  lot           InventoryLot @relation(fields: [lotId], references: [id])
+  movementType  MovementType
+  quantity      Decimal      @db.Decimal(18, 6)
+  referenceType String
+  referenceId   String       @db.Uuid
+  reason        String
+  createdBy     String       @db.Uuid
+  creator       User         @relation(fields: [createdBy], references: [id])
+  createdAt     DateTime     @default(now())
+
+  @@index([createdAt, movementType])
+  @@index([lotId])
+}
+
+model ProductionPlan {
+  id             String               @id @default(uuid()) @db.Uuid
+  productionDate DateTime             @db.Date
+  status         PlanStatus           @default(DRAFT)
+  createdBy      String               @db.Uuid
+  creator        User                 @relation(fields: [createdBy], references: [id])
+  createdAt      DateTime             @default(now())
+  items          ProductionPlanItem[]
+}
+
+model ProductionPlanItem {
+  id               String         @id @default(uuid()) @db.Uuid
+  productionPlanId String         @db.Uuid
+  productionPlan   ProductionPlan @relation(fields: [productionPlanId], references: [id])
+  productId        String         @db.Uuid
+  product          Product        @relation(fields: [productId], references: [id])
+  plannedQuantity  Decimal        @db.Decimal(18, 6)
+
+  @@unique([productionPlanId, productId])
+}
+
+model ProductionOrder {
+  id                    String                  @id @default(uuid()) @db.Uuid
+  productId             String                  @db.Uuid
+  product               Product                 @relation(fields: [productId], references: [id])
+  recipeVersionId       String                  @db.Uuid
+  recipeVersion         RecipeVersion           @relation(fields: [recipeVersionId], references: [id])
+  plannedQuantity       Decimal?                @db.Decimal(18, 6)
+  producedQuantity      Decimal                 @default(0) @db.Decimal(18, 6)
+  status                ProductionStatus        @default(PLANNED)
+  startedAt             DateTime?
+  completedAt           DateTime?
+  responsibleEmployeeId String                  @db.Uuid
+  responsibleEmployee   Employee                @relation(fields: [responsibleEmployeeId], references: [id])
+  totalCost             Decimal                 @default(0) @db.Decimal(18, 6)
+  createdAt             DateTime                @default(now())
+  consumptions          ProductionConsumption[]
+  outputLot             InventoryLot?
+
+  @@index([completedAt, status])
+}
+
+model ProductionConsumption {
+  id                String          @id @default(uuid()) @db.Uuid
+  productionOrderId String          @db.Uuid
+  productionOrder   ProductionOrder @relation(fields: [productionOrderId], references: [id])
+  ingredientId      String          @db.Uuid
+  ingredient        Ingredient      @relation(fields: [ingredientId], references: [id])
+  inventoryLotId    String          @db.Uuid
+  inventoryLot      InventoryLot    @relation(fields: [inventoryLotId], references: [id])
+  quantity          Decimal         @db.Decimal(18, 6)
+  unitCost          Decimal         @db.Decimal(18, 6)
+
+  @@unique([productionOrderId, inventoryLotId])
+}
+
+model Loss {
+  id                    String       @id @default(uuid()) @db.Uuid
+  itemType              ItemType
+  ingredientId          String?      @db.Uuid
+  ingredient            Ingredient?  @relation(fields: [ingredientId], references: [id])
+  productId             String?      @db.Uuid
+  product               Product?     @relation(fields: [productId], references: [id])
+  lotId                 String       @db.Uuid
+  lot                   InventoryLot @relation(fields: [lotId], references: [id])
+  quantity              Decimal      @db.Decimal(18, 6)
+  reason                LossReason
+  notes                 String?
+  estimatedCost         Decimal      @db.Decimal(18, 6)
+  responsibleEmployeeId String       @db.Uuid
+  responsibleEmployee   Employee     @relation(fields: [responsibleEmployeeId], references: [id])
+  createdAt             DateTime     @default(now())
+
+  @@index([createdAt, reason])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  entity    String
+  entityId  String   @db.Uuid
+  metadata  Json     @db.JsonB
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
 }
