@@ -3,7 +3,7 @@ import { hash } from 'argon2';
 import { createHash } from 'node:crypto';
 const db = new PrismaClient();
 const id = (key: string) => { const s=createHash('sha256').update('bakeflow-demo-v1:'+key).digest('hex'); return s.slice(0,8)+'-'+s.slice(8,12)+'-4'+s.slice(13,16)+'-a'+s.slice(17,20)+'-'+s.slice(20,32); };
-const anchor = new Date((process.env.DEMO_ANCHOR_DATE ?? new Date().toISOString().slice(0,10))+'T00:00:00Z');
+const anchor = new Date((process.env.DEMO_ANCHOR_DATE || new Date().toISOString().slice(0,10))+'T00:00:00Z');
 if(Number.isNaN(anchor.getTime()))throw new Error('DEMO_ANCHOR_DATE inválida.');
 const day = (offset: number) => new Date(anchor.getTime()+offset*86400000);
 const password = process.env.DEMO_PASSWORD;
