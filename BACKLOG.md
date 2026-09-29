@@ -17,4 +17,4 @@ Sequência obrigatória; DONE somente após comprovar aceite e registrar valida�
 | M11 Dashboard + relatórios | DONE | KPIs, gráficos, filtros, CSV; R10 |
 | M12 Demo | DONE | Padaria Santa Massa e cenários; R12 |
 | M13 Qualidade | DONE | Testes críticos, smoke, revisão UI/API; R1–R12 |
-| M14 Portfólio | IN PROGRESS | README, screenshots, CI, GitHub; R13 |
+| M14 Portfólio | DONE | README, screenshots, CI, GitHub; R13 |
