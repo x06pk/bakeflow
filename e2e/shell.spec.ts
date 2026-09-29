@@ -1,0 +1,26 @@
+import { test, expect } from '@playwright/test';
+test('login real, theme persistence, mobile navigation and logout', async ({ page }) => {
+ const errors: string[] = [];
+ page.on('pageerror', error => errors.push(error.message));
+ await page.goto('/login');
+ await page.getByLabel('E-mail', { exact: true }).fill('admin@bakeflow.demo');
+ await page.getByLabel('Senha', { exact: true }).fill(process.env.DEMO_PASSWORD!);
+ await page.getByRole('button', { name: 'Entrar na plataforma' }).click();
+ await expect(page.getByRole('button', { name: 'Sair', exact: true })).toBeVisible();
+ await page.getByRole('button', { name: 'Recolher menu' }).click();
+ await expect(page.locator('aside')).toHaveCSS('width', '80px');
+ await page.getByRole('button', { name: 'Alternar tema' }).click();
+ await expect(page.locator('html')).toHaveClass('dark');
+ await page.reload();
+ await expect(page.getByRole('button', { name: 'Sair', exact: true })).toBeVisible();
+ await expect(page.locator('html')).toHaveClass('dark');
+ await page.setViewportSize({ width: 390, height: 844 });
+ await page.getByRole('button', { name: 'Abrir menu' }).click();
+ await expect(page.getByRole('link', { name: 'Configurações' })).toBeVisible();
+ await page.getByRole('link', { name: 'Configurações' }).click();
+ await expect(page.getByText('Perfil de acesso')).toBeVisible();
+ expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+ await page.getByRole('button', { name: 'Sair', exact: true }).click();
+ await expect(page.getByRole('button', { name: 'Entrar na plataforma' })).toBeVisible();
+ expect(errors).toEqual([]);
+});

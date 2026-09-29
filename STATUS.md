@@ -1,10 +1,12 @@
-# Status — 2026-09-28
+# Status — 2026-09-29
 
-Current milestone: M3 validado; M4 IN PROGRESS.
-Completed: monorepo, React/Vite, Fastify/health, Prisma, Docker/Compose, lint/typecheck/build, smoke e CI configurado. Repositorio privado x06pk/bakeflow confirmado.
-Validation: pnpm.cmd install, db:generate, build, lint, typecheck e test aprovados (1 smoke). Docker compose up -d --build aprovado; PostgreSQL/API healthy e web HTTP 200 em localhost:8080. PostgreSQL local isolado na porta 55432 (5432 ocupada, nenhum outro servico alterado).
-M2: schema completo, migration aplicada e seed minimo idempotente. Testes de constraints/rollback/imutabilidade aprovados (3 testes totais), lint/typecheck/build aprovados. Startup Docker com migration/seed e health validado. M3: login/me/refresh/logout, Argon2, JWT 15 min, refresh HttpOnly 7 dias, rotação/replay/revogação e RBAC. Lint/typecheck/build API e 4 testes aprovados. Remaining: M4–M14.
-Known issues: usar pnpm.cmd e COREPACK_HOME neste projeto/.cache/corepack. Docker/GitHub requerem ferramentas fora do sandbox. Git elevated requer safe.directory por variavel de processo; nao alterar config pessoal.
-External blockers: nenhum atual. CI aguardando primeiro push.
-Last successful commit: b023e0c (M2), enviado para origin/main; CI M1 aprovada.
-Next action: design system, shell responsivo, tema e login integrado.
+Current milestone: M4 validado; M5 IN PROGRESS.
+Completed: M1–M3 preservados. M4: login integrado, shell responsivo, sidebar recolhível/mobile, light/dark persistente, componentes shadcn/ui, feedback e dialog acessível.
+Validation: lint, typecheck e build web aprovados. Smoke Playwright com Edge: login real, refresh após reload, tema, sidebar 80px, mobile 390px sem overflow e logout aprovados. CI M3 success: https://github.com/x06pk/bakeflow/actions/runs/36516671387.
+Remaining: M5 catálogo e versões; M6–M14 conforme backlog. Links dos módulos seguintes ainda aguardam implementação; não são entrega V1 concluída.
+Known issues: Chromium baixou mas extração travou e foi interrompida; smoke usa E2E_BROWSER=msedge instalado. Cache parcial ignorado em .cache/playwright. Rollup avisa sobre comentários de dependência Zod; build passa.
+External blockers: nenhum. Não reinstalar dependências já presentes.
+Last successful commit: 72ba218 (M3), sincronizado com origin/main; M4 será commitado neste checkpoint.
+Runtime: Docker bakeflow-postgres saudável em localhost:55432, API/web Docker ainda imagem M2. API host PID 16824 em 3000; Vite em 5173, iniciados nesta sessão. API usa CORS_ORIGIN=http://localhost:5173.
+Commands: definir COREPACK_HOME=C:/ProjetosIA/projects/bakeflow/.cache/corepack; usar pnpm.cmd. Git requer -c safe.directory=C:/ProjetosIA/projects/bakeflow por mudança de usuário executor, sem alterar configuração global.
+Next action: implementar catálogo/receitas na API e web, preservar imutabilidade e paginação backend. Continuar com commits/push por milestone.
