@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { Prisma } from '@bakeflow/database';
 export const pageSchema = z.object({
  page: z.coerce.number().int().min(1).default(1), pageSize: z.coerce.number().int().min(1).max(100).default(20),
  search: z.string().max(100).default(''), status: z.string().max(40).optional(),
@@ -7,7 +8,7 @@ export const pageSchema = z.object({
  from: z.iso.date().optional(), to: z.iso.date().optional(),
 });
 export const idSchema = z.object({ id: z.uuid() });
-export const amount = z.coerce.number().finite().min(0).max(1000000000);
+export const amount = z.coerce.number().finite().min(0).max(1000000000).refine(value => new Prisma.Decimal(value).decimalPlaces() <= 6, 'Use no máximo 6 casas decimais.');
 export const positive = amount.gt(0);
 export const units = z.enum(['KG','G','L','ML','UNIT']);
 export function pagination(q: z.infer<typeof pageSchema>) { return { skip: (q.page - 1) * q.pageSize, take: q.pageSize }; }

@@ -1,0 +1,3 @@
+import {useSyncExternalStore} from 'react';
+function subscribe(callback:()=>void){window.addEventListener('bakeflow-theme',callback);window.addEventListener('storage',callback);return()=>{window.removeEventListener('bakeflow-theme',callback);window.removeEventListener('storage',callback);};}
+export function useTheme(){const dark=useSyncExternalStore(subscribe,()=>localStorage.getItem('bakeflow-theme')==='dark');function setDark(value:boolean){localStorage.setItem('bakeflow-theme',value?'dark':'light');document.documentElement.classList.toggle('dark',value);window.dispatchEvent(new Event('bakeflow-theme'));}return {dark,setDark};}

@@ -24,7 +24,7 @@ test('login real, theme persistence, mobile navigation and logout', async ({ pag
  await page.getByRole('button', { name: 'Abrir menu' }).click();
  await expect(page.getByRole('link', { name: 'Configurações' })).toBeVisible();
  await page.getByRole('link', { name: 'Configurações' }).click();
- await expect(page.getByText('Perfil de acesso')).toBeVisible();
+ await expect(page.getByRole('heading', { name: 'Perfil de acesso', exact: true })).toBeVisible();
  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
  await page.getByRole('button', { name: 'Sair', exact: true }).click();
  await expect(page.getByRole('button', { name: 'Entrar na plataforma' })).toBeVisible();

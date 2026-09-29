@@ -28,12 +28,13 @@ export const catalogService = {
   });
  },
  async saveProduct(body: z.infer<typeof productSchema>, id?: string) {
-  if(id) {
-   const old=await db.product.findUniqueOrThrow({where:{id},include:{_count:{select:{lots:true,recipes:true}}}});
+  return db.$transaction(async tx => { if(id) {
+   await tx.$queryRaw`SELECT id FROM "Product" WHERE id=${id}::uuid FOR UPDATE`;
+   const old=await tx.product.findUniqueOrThrow({where:{id},include:{_count:{select:{lots:true,recipes:true}}}});
    if(old.unit!==body.unit && Object.values(old._count).some(Boolean)) throw new AppError(409,'UNIT_IN_USE','Unidade não pode mudar após uso em receita ou lote.');
-   return db.product.update({where:{id},data:body});
+   return tx.product.update({where:{id},data:body});
   }
-  return db.product.create({data:body});
+  return tx.product.create({data:body}); });
  },
  async version(recipeId: string, body: z.infer<typeof versionSchema>) {
   return db.$transaction(async tx=>{
@@ -57,5 +58,5 @@ export const catalogService = {
 };
 async function validateItems(tx: Parameters<Parameters<typeof db.$transaction>[0]>[0], items: z.infer<typeof versionSchema>['items']) {
  if(new Set(items.map(i=>i.ingredientId)).size!==items.length) throw new AppError(400,'DUPLICATE_INGREDIENT','Não repita insumos na mesma receita.');
- for(const item of items) { const ingredient=await tx.ingredient.findUniqueOrThrow({where:{id:item.ingredientId}}); if(!ingredient.active) throw new AppError(422,'INACTIVE_INGREDIENT','A receita contém insumo inativo.'); convert(item.quantity,item.unit,ingredient.baseUnit); }
+ for(const item of [...items].sort((a,b)=>a.ingredientId.localeCompare(b.ingredientId))) { await tx.$queryRaw`SELECT id FROM "Ingredient" WHERE id=${item.ingredientId}::uuid FOR SHARE`; const ingredient=await tx.ingredient.findUniqueOrThrow({where:{id:item.ingredientId}}); if(!ingredient.active) throw new AppError(422,'INACTIVE_INGREDIENT','A receita contém insumo inativo.'); convert(item.quantity,item.unit,ingredient.baseUnit); }
 }

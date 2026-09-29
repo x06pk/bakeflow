@@ -45,7 +45,7 @@ export const inventoryService={
   const [data,total]=await db.$transaction([db.inventoryLot.findMany({where,...pagination(q),orderBy:{expiresAt:q.order},include:{ingredient:true,product:true}}),db.inventoryLot.count({where})]);return result(data,total,q);
  },
  async movements(q:z.infer<typeof pageSchema>) {
-  const where={...(q.ingredientId?{ingredientId:q.ingredientId}:{}),...(q.productId?{productId:q.productId}:{}),...(q.from||q.to?{createdAt:{...(q.from?{gte:new Date(q.from)}:{}),...(q.to?{lt:new Date(new Date(q.to).getTime()+86400000)}:{})}}:{})};
+  const where={...(q.search?{OR:[{reason:{contains:q.search,mode:'insensitive' as const}},{lot:{lotCode:{contains:q.search,mode:'insensitive' as const}}},{ingredient:{name:{contains:q.search,mode:'insensitive' as const}}},{product:{name:{contains:q.search,mode:'insensitive' as const}}}]}:{}),...(q.ingredientId?{ingredientId:q.ingredientId}:{}),...(q.productId?{productId:q.productId}:{}),...(q.from||q.to?{createdAt:{...(q.from?{gte:new Date(q.from)}:{}),...(q.to?{lt:new Date(new Date(q.to).getTime()+86400000)}:{})}}:{})};
   const [data,total]=await db.$transaction([db.inventoryMovement.findMany({where,...pagination(q),orderBy:{createdAt:q.order},include:{ingredient:true,product:true,lot:true,creator:{select:{name:true}}}}),db.inventoryMovement.count({where})]);return result(data,total,q);
  },
  async balances(q:z.infer<typeof pageSchema>) {

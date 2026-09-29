@@ -1,13 +1,9 @@
-import { readFileSync } from 'node:fs';
+import { loadEnvFile } from 'node:process';
 import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 const root = resolve(import.meta.dirname, '..');
 try {
-  const values = process.env;
-  for (const line of readFileSync(resolve(root, '.env'), 'utf8').split(/\r?\n/)) {
-    const match = line.match(/^([A-Z_]+)=(.*)$/);
-    if (match && !values[match[1]]) values[match[1]] = match[2];
-  }
+  loadEnvFile(resolve(root, '.env'));
 } catch (error) { if (error.code !== 'ENOENT') throw error; }
 const mode = process.argv[2];
 const commands = {
