@@ -1,3 +1,5 @@
+import { dashboardRoutes } from './modules/dashboard/routes.js';
+import { reportRoutes } from './modules/reports/routes.js';
 import { employeeRoutes } from './modules/employees/routes.js';
 import { userRoutes } from './modules/users/routes.js';
 import { lossRoutes } from './modules/losses/routes.js';
@@ -31,6 +33,7 @@ export async function buildApp() {
     if (error instanceof AppError) return reply.code(error.status).send({ error: { code: error.code, message: error.message, details: error.details } });
     if (error instanceof ZodError) return reply.code(400).send({ error: { code: 'VALIDATION_ERROR', message: 'Confira os campos informados.', details: error.flatten() } });
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2034') return reply.code(409).send({ error: { code: 'CONCURRENT_CHANGE', message: 'Os dados foram alterados por outra operação. Tente novamente.' } });
       if (error.code === 'P2002') return reply.code(409).send({ error: { code: 'DUPLICATE', message: 'Já existe um registro com estes dados.' } });
       if (error.code === 'P2025') return reply.code(404).send({ error: { code: 'NOT_FOUND', message: 'Registro não encontrado.' } });
       if (error.code === 'P2003') return reply.code(409).send({ error: { code: 'REFERENCE_CONFLICT', message: 'O registro possui referências inválidas ou está em uso.' } });
@@ -47,5 +50,7 @@ export async function buildApp() {
   await app.register(lossRoutes, { prefix: '/api/v1' });
   await app.register(employeeRoutes, { prefix: '/api/v1' });
   await app.register(userRoutes, { prefix: '/api/v1' });
+  await app.register(dashboardRoutes, { prefix: '/api/v1' });
+  await app.register(reportRoutes, { prefix: '/api/v1' });
   return app;
 }

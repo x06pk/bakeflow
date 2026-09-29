@@ -18,6 +18,7 @@ export async function api<T>(path: string, init: RequestInit = {}, retry = true)
   }
   if (!response.ok) { const result = await response.json().catch(() => ({})); throw new ApiError(result.error?.message ?? 'Não foi possível concluir a operação.', response.status, result.error?.code ?? 'ERROR'); }
   if (response.status === 204) return undefined as T;
+  if (response.headers.get("content-type")?.includes("text/csv")) return response.text() as Promise<T>;
   return response.json() as Promise<T>;
 }
 export const post = <T,>(path: string, data: unknown) => api<T>(path, { method: 'POST', body: JSON.stringify(data) });

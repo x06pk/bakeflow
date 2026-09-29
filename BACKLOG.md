@@ -14,7 +14,7 @@ Sequência obrigatória; DONE somente após comprovar aceite e registrar valida�
 | M8 Produção | DONE | Planos, faltas, transação, custos, rastreabilidade; R7 |
 | M9 Perdas | DONE | Registro, baixa, custo e histórico; R8 |
 | M10 RH | DONE | Funcionários, férias, ausências; R9 |
-| M11 Dashboard + relatórios | IN PROGRESS | KPIs, gráficos, filtros, CSV; R10 |
-| M12 Demo | TODO | Padaria Santa Massa e cenários; R12 |
+| M11 Dashboard + relatórios | DONE | KPIs, gráficos, filtros, CSV; R10 |
+| M12 Demo | IN PROGRESS | Padaria Santa Massa e cenários; R12 |
 | M13 Qualidade | TODO | Testes críticos, smoke, revisão UI/API; R1–R12 |
 | M14 Portfólio | TODO | README, screenshots, CI, GitHub; R13 |
