@@ -11,7 +11,8 @@
     "test": "vitest run",
     "db:generate": "pnpm --filter @bakeflow/database generate",
     "db:migrate": "node scripts/database.mjs migrate",
-    "seed:minimal": "node scripts/database.mjs minimal"
+    "seed:minimal": "node scripts/database.mjs minimal",
+    "seed:demo": "node scripts/database.mjs demo"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",

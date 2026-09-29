@@ -13,6 +13,7 @@ const mode = process.argv[2];
 const commands = {
   migrate: ['packages/database/node_modules/prisma/build/index.js', 'migrate', 'deploy', '--schema', 'packages/database/prisma/schema.prisma'],
   minimal: ['packages/database/prisma/seed-minimal.ts'],
+  demo: ['packages/database/prisma/seed-demo.ts'],
 };
 if (!(mode in commands)) throw new Error('Comando de banco desconhecido.');
 const result = spawnSync(process.execPath, commands[mode], { cwd: root, stdio: 'inherit', env: process.env });

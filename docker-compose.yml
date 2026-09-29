@@ -26,6 +26,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       DEMO_PASSWORD: ${DEMO_PASSWORD}
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      SEED_MODE: ${SEED_MODE:-demo}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
     depends_on:
       postgres:
